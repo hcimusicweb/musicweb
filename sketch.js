@@ -12,6 +12,9 @@ let searchDiv;
 let searchInput;
 let searchButton;
 let currentFocus;
+let overlay;
+let text;
+let start;
 
 function preload(){
   loadJSON("data.json", setData);
@@ -20,8 +23,18 @@ function preload(){
 function setup() {
   w = windowWidth - 5;
   h = windowHeight - 5;
+  start = true;
 
-  createCanvas(w, h, WEBGL);
+  overlay = createDiv();
+  overlay.id("overlay");
+  overlay.size(w, h);
+  overlay.style('display', "block");
+  text = createDiv('Welcome to the Spotify Musicweb <br> You can explore 6 different genres <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move');
+  text.id("text");
+  overlay.child(text);
+
+  var canvas = createCanvas(w, h, WEBGL);
+  canvas.parent(select("#canvas"));
   pixelDensity(1);
   setAttributes('antialias', true);
 
@@ -46,6 +59,8 @@ function setup() {
   searchButton = select('button');
   searchButton.mousePressed(buttonPressed);
   searchInput.input(inpEvent);
+
+  
 
   /*for(let i = 0; i < numGenre + 1; i++){
     genres.push(new genre(i, randColor(), random(w) - w/2, random(h) - h/2, random(min(w, h))));
@@ -121,7 +136,7 @@ function windowResized() {
   w = windowWidth;
   h = windowHeight;
   resizeCanvas(windowWidth -5, windowHeight-5);
-  
+
   easycam.setViewport([0,0,windowWidth, windowHeight]);
 
   searchForm.position(w - 380, 20);
@@ -137,6 +152,10 @@ function mousePressed(){
       openNav(i);
       break;
     }
+  }
+  if(start){
+    start = false;
+    overlay.style('display', "none");
   }
 }
 
