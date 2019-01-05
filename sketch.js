@@ -15,6 +15,7 @@ let currentFocus;
 let overlay;
 let text;
 let start;
+let question;
 
 function preload(){
   loadJSON("data.json", setData);
@@ -29,9 +30,12 @@ function setup() {
   overlay.id("overlay");
   overlay.size(w, h);
   overlay.style('display', "block");
-  text = createDiv('Welcome to the Spotify Musicweb <br> You can explore 6 different genres <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move <br> <br> Click anywhere to close this overlay');
+  text = createDiv('Welcome to the Spotify Musicweb <br> You can explore 6 different genres <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move <br> Click on a circle to see information <br> <br> Click anywhere to close this overlay');
   text.id("text");
   overlay.child(text);
+
+  question = select('.question');
+  question.position(w - 60, h - 50);
 
   var canvas = createCanvas(w, h, WEBGL);
   canvas.parent(select("#canvas"));
@@ -302,4 +306,9 @@ function buttonPressed(){
       easycam.setDistance(100, 500);
     }
   }
+}
+
+function showStart(){
+  start = true;
+  overlay.style('display', "block");
 }
