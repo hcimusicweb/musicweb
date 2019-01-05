@@ -3,38 +3,50 @@ let genres = [];
 let lines = [];
 var h, w;
 let easycam;
-let canvas;
 let data;
 let sideBar;
 let info;
 let header;
+let searchForm;
+let searchDiv;
+let searchInput;
+let searchButton;
+let currentFocus;
 
 function preload(){
   loadJSON("data.json", setData);
 }
 
 function setup() {
-  w = windowWidth;
-  h = windowHeight;
+  w = windowWidth - 5;
+  h = windowHeight - 5;
 
-
-  canvas = createCanvas(w, h, WEBGL);
+  createCanvas(w, h, WEBGL);
   pixelDensity(1);
   setAttributes('antialias', true);
 
-  //console.log(Dw);
-  //console.log(Dw.EasyCam.INFO);
+  console.log(Dw);
+  console.log(Dw.EasyCam.INFO);
 
-  /*Dw.EasyCam.prototype.apply = function(n){
+  Dw.EasyCam.prototype.apply = function(n){
     var o = this.cam;
     n = n || o.renderer,
     n && (this.camEYE = this.getPosition(this.camEYE), this.camLAT = this.getCenter(this.camLAT), this.camRUP = this.getUpVector(this.camRUP), n._curCamera.camera(this.camEYE[0], this.camEYE[1], this.camEYE[2], this.camLAT[0], this.camLAT[1], this.camLAT[2], this.camRUP[0], this.camRUP[1], this.camRUP[2]))
   };
 
-  easycam = createEasyCam();*/
+  easycam = createEasyCam();
 
   sideBar = createDiv('<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>');
   sideBar.class("sidenav");
+
+  searchForm = select('.search');
+  searchDiv = select('.autocomplete');
+  searchInput = select('#myInput');
+  searchForm.position(w - 380, 20);
+  searchButton = select('button');
+  searchButton.mousePressed(buttonPressed);
+  searchInput.input(inpEvent);
+
   /*for(let i = 0; i < numGenre + 1; i++){
     genres.push(new genre(i, randColor(), random(w) - w/2, random(h) - h/2, random(min(w, h))));
     print(genres[i - 101])
@@ -52,7 +64,7 @@ function setup() {
 function draw() {
   background(128 ,128 ,128);
 
-  orbitControl();
+  //orbitControl();
   noStroke();
 
   for(let i = 0; i < numGenre; i++){
@@ -106,9 +118,14 @@ function randColor(){
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  //easycam.setViewport([0,0,windowWidth, windowHeight]);
-  //updatePixels();
+  w = windowWidth;
+  h = windowHeight;
+  resizeCanvas(windowWidth -5, windowHeight-5);
+  
+  easycam.setViewport([0,0,windowWidth, windowHeight]);
+
+  searchForm.position(w - 380, 20);
+  
 }
 
 function mousePressed(){
@@ -160,4 +177,110 @@ function closeNav() {
   info.remove();
   header.remove();
   sideBar.style('width', 0);
+}
+
+function inpEvent(){
+  var a, b, i, val = searchInput.value();
+  var name;
+  console.log(val);
+  closeAllLists();
+
+  if (!val) { return false;}
+  currentFocus = -1;
+
+  a = createDiv();
+  a.attribute("id", "autocomplete-list");
+  a.attribute("class", "autocomplete-items");
+  searchDiv.child(a);
+
+  for(i = 0; i < numGenre; i++){
+    name = genres[i].name;
+    console.log(name);
+    if(name.substr(0, val.length).toUpperCase() == val.toUpperCase()){
+      b = createDiv("<strong>" + name.substr(0, val.length) + "</strong>");
+      b.html(name.substr(val.length), true);
+      b.html("<input type='hidden' value='" + name + "'>", true);
+      b.mousePressed(bPressed)
+      function bPressed(){
+        /*insert the value for the autocomplete text field:*/
+        searchInput.value(select('input', b).value());
+        /*close the list of autocompleted values,
+        (or any other open lists of autocompleted values:*/
+        closeAllLists();
+        buttonPressed();
+      };
+      a.child(b);
+    }
+  }
+  console.log("yo");
+}
+
+function closeAllLists(elmnt) {
+  /*close all autocomplete lists in the document,
+  except the one passed as an argument:*/
+  var x = selectAll(".autocomplete-items");
+  for (var i = 0; i < x.length; i++){
+    if (elmnt != x[i] && elmnt != searchInput){
+      x[i].remove();
+    }
+  }
+}
+
+function keyPressed(){
+  console.log("Pressed");
+  var a;
+  var x = select("#autocomplete-list");
+  console.log(x);
+  if(x) a = selectAll("div", x);
+  console.log(a);
+  switch(keyCode){
+    case DOWN_ARROW:
+      currentFocus++;
+      addActive(a);
+      break;
+    case UP_ARROW:
+      currentFocus--;
+      addActive(a);
+      break;
+    case ENTER:
+    case RETURN:
+      if (a){
+        searchInput.value(select('input', a[currentFocus]).value());
+        closeAllLists();
+        buttonPressed();
+      }
+      //return false;
+      break;
+  }
+}
+
+function addActive(x) {
+  /*a function to classify an item as "active":*/
+  if (!x) return false;
+  /*start by removing the "active" class on all items:*/
+  removeActive(x);
+  if (currentFocus >= x.length) currentFocus = 0;
+  if (currentFocus < 0) currentFocus = (x.length - 1);
+  /*add class "autocomplete-active":*/
+  x[currentFocus].addClass("autocomplete-active");
+}
+
+function removeActive(x) {
+  /*a function to remove the "active" class from all autocomplete items:*/
+  for (var i = 0; i < x.length; i++) {
+    x[i].removeClass("autocomplete-active");
+  }
+}
+
+function buttonPressed(){
+  var val = searchInput.value();
+  var name, gen, i;
+  for(i = 0; i < numGenre; i++){
+    gen = genres[i];
+    name = gen.name;
+    if(val.toUpperCase() == name.toUpperCase()){
+      easycam.setCenter([gen.x, gen.y, gen.z], 500);
+      easycam.setDistance(100, 500);
+    }
+  }
 }

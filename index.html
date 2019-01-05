@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Web</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
     <style> body {padding: 0; margin: 0;} </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
@@ -15,5 +16,11 @@
     <style>padding:0; margin:0;</style>
   </head>
   <body>
+    <div class="search">
+      <div class="autocomplete" style="width:300px;">
+        <input id="myInput" type="text" name="genre" placeholder="Search for genre">
+      </div>
+      <button type="submit"><i class="fa fa-search"></i></button>
+    </div>
   </body>
 </html>
