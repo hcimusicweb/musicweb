@@ -29,7 +29,7 @@ function setup() {
   overlay.id("overlay");
   overlay.size(w, h);
   overlay.style('display', "block");
-  text = createDiv('Welcome to the Spotify Musicweb <br> You can explore 6 different genres <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move');
+  text = createDiv('Welcome to the Spotify Musicweb <br> You can explore 6 different genres <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move <br> <br> Click anywhere to close this overlay');
   text.id("text");
   overlay.child(text);
 
