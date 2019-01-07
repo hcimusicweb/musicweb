@@ -147,6 +147,10 @@ input[type=submit] {
   -ms-transform: translate(-50%,-50%);
 }
 
+#text h1{
+  color: white;
+}
+
 .question {
   position: absolute;
 
