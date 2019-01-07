@@ -1,4 +1,4 @@
-let numGenre = 6;
+let numGenre;
 let genres = [];
 let lines = [];
 var h, w;
@@ -16,6 +16,7 @@ let overlay;
 let text;
 let start;
 let question;
+let selected;
 
 function preload(){
   loadJSON("data.json", setData);
@@ -30,9 +31,11 @@ function setup() {
   overlay.id("overlay");
   overlay.size(w, h);
   overlay.style('display', "block");
-  text = createDiv('Welcome to the Spotify Musicweb <br> You can explore 6 different genres <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move <br> Click on a circle to see information <br> <br> Click anywhere to close this overlay');
+  text = createDiv('<h1>Welcome to the Spotify Musicweb</h1> <br> You can explore 126 different genres and the connections between each other <br> If there is a link between two genres it means spotify recommends one if you like the other. <br> <br> Controls: <br> Zoom: scrolling <br> Rotate: Hold left mouse and move <br> Move web: Hold middle mouse button and move <br> Click on a circle to see information about that genre <br> <br> Click anywhere to close this overlay');
   text.id("text");
   overlay.child(text);
+
+  selected = -1;
 
   question = select('.question');
   question.position(w - 60, h - 50);
@@ -52,6 +55,7 @@ function setup() {
   };
 
   easycam = createEasyCam();
+  easycam.setDistance(4000, 0);
 
   sideBar = createDiv('<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>');
   sideBar.class("sidenav");
@@ -63,21 +67,6 @@ function setup() {
   searchButton = select('button');
   searchButton.mousePressed(buttonPressed);
   searchInput.input(inpEvent);
-
-  
-
-  /*for(let i = 0; i < numGenre + 1; i++){
-    genres.push(new genre(i, randColor(), random(w) - w/2, random(h) - h/2, random(min(w, h))));
-    print(genres[i - 101])
-  }*/
-  for(let i = 0; i < numGenre; i++){
-    let a = random(genres);
-    let b = random(genres);
-    while(a == b){
-      b = random(genres);
-    }
-    lines.push(new genLine(a, b));
-  }
 }
 
 function draw() {
@@ -86,9 +75,19 @@ function draw() {
   //orbitControl();
   noStroke();
 
+  for(let i = 0; i < lines.length; i++){
+    if(selected < 0)
+      lines[i].draw();
+    else if(lines[i].gen1.id == selected || lines[i].gen2.id == selected)
+      lines[i].draw();
+  }
   for(let i = 0; i < numGenre; i++){
-    genres[i].draw();
-    lines[i].draw();
+    if(selected < 0)
+      genres[i].draw();
+    else if(i == selected)
+      genres[i].draw();
+    else if(genres[i].hasLink(selected) || genres[selected].hasLink(i))
+      genres[i].draw();
   }
 }
 
@@ -100,6 +99,7 @@ function genre(idin, namein, colorin, xin, yin, zin, infoin){
   this.y = yin;
   this.z = zin;
   this.info = infoin;
+  this.links = [];
 
   this.draw = function(){
     push();
@@ -108,9 +108,24 @@ function genre(idin, namein, colorin, xin, yin, zin, infoin){
     sphere(20);
     pop();
   }
+
+  this.addLink = function(genin){
+    this.links.push(genin);
+  }
+
+  this.hasLink = function(m){
+    console.log(this.links);
+    for(let i = 0; i < this.links.length; i++){
+      if(this.links[i] == m)
+        return true;
+    }
+    return false;
+  }
 }
 
 function genLine(gen1, gen2){
+  this.gen1 = gen1;
+  this.gen2 = gen2;
   this.x1 = gen1.x;
   this.y1 = gen1.y;
   this.z1 = gen1.z;
@@ -121,7 +136,11 @@ function genLine(gen1, gen2){
   this.draw = function(){
     push();
 
-    stroke(255, 0, 0);
+    stroke(255, 0, 1);
+    if(selected < 0)
+      strokeWeight(1);
+    else
+      strokeWeight(4);
     line(this.x1, this.y1, this.z1, this.x2, this.y2, this.z2);
 
     pop();
@@ -148,18 +167,20 @@ function windowResized() {
 }
 
 function mousePressed(){
-  let x = getObjectID(mouseX, mouseY);
-  print("Object: " + x);
-  for(let i = 0; i < numGenre; i++){
-    if(red(genres[i].color) == red(x) && green(genres[i].color) == green(x) && blue(genres[i].color) == blue(x)){
-      //genres[i].color = randColor();
-      openNav(i);
-      break;
-    }
-  }
   if(start){
     start = false;
     overlay.style('display', "none");
+  }
+  else{
+    let x = getObjectID(mouseX, mouseY);
+    print("Object: " + x);
+    for(let i = 0; i < numGenre; i++){
+      if(red(genres[i].color) == red(x) && green(genres[i].color) == green(x) && blue(genres[i].color) == blue(x)){
+        //genres[i].color = randColor();
+        openNav(i);
+        break;
+      }
+    }
   }
 }
 
@@ -175,8 +196,20 @@ function getObjectID(mx, my) {
 }
 
 function setData(data){
+  numGenre = data.length;
   for(let i = 0; i < numGenre; i++){
     genres.push(new genre(i, data[i].name, color(data[i].color), data[i].x, data[i].y, data[i].z, data[i].info));
+  }
+  
+  for(let i = 0; i < numGenre; i++){
+    for(let j = 0; j < data[i].links.length; j++){
+      for(let k = 0; k < numGenre; k++){
+        if(data[i].links[j] == genres[k].name){
+          genres[i].addLink(genres[k].id);
+          lines.push(new genLine(genres[i], genres[k]))
+        }
+      }
+    }
   }
 }
 
@@ -188,15 +221,17 @@ function openNav(i) {
   if(header !== undefined){
     header.remove();
   }
-  sideBar.style('width', '33%')
+  sideBar.style('width', '33%');
   info = createP(genres[i].info);
-  header = createElement('h1', genres[i].name);
+  header = createElement('h1', genres[i].name.charAt(0).toUpperCase() + genres[i].name.slice(1));
   sideBar.child(header);
   sideBar.child(info);
+  selected = i;
+  let sel = false;
 }
 
-/* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
 function closeNav() {
+  selected = -1;
   info.remove();
   header.remove();
   sideBar.style('width', 0);
@@ -225,10 +260,7 @@ function inpEvent(){
       b.html("<input type='hidden' value='" + name + "'>", true);
       b.mousePressed(bPressed)
       function bPressed(){
-        /*insert the value for the autocomplete text field:*/
         searchInput.value(select('input', b).value());
-        /*close the list of autocompleted values,
-        (or any other open lists of autocompleted values:*/
         closeAllLists();
         buttonPressed();
       };
@@ -239,8 +271,6 @@ function inpEvent(){
 }
 
 function closeAllLists(elmnt) {
-  /*close all autocomplete lists in the document,
-  except the one passed as an argument:*/
   var x = selectAll(".autocomplete-items");
   for (var i = 0; i < x.length; i++){
     if (elmnt != x[i] && elmnt != searchInput){
@@ -304,6 +334,8 @@ function buttonPressed(){
     if(val.toUpperCase() == name.toUpperCase()){
       easycam.setCenter([gen.x, gen.y, gen.z], 500);
       easycam.setDistance(100, 500);
+      searchInput.value("");
+      openNav(gen.id);
     }
   }
 }
