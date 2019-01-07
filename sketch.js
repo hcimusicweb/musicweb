@@ -165,12 +165,15 @@ function windowResized() {
   
 }
 
-function mouseClicked(){
+function mousePressed(){
   if(start){
     start = false;
     overlay.style('display', "none");
   }
-  else{
+}
+
+function mouseClicked(){
+  if(!start){
     let x = getObjectID(mouseX, mouseY);
     for(let i = 0; i < numGenre; i++){
       if(red(genres[i].color) == red(x) && green(genres[i].color) == green(x) && blue(genres[i].color) == blue(x)){
