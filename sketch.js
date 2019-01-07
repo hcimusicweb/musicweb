@@ -114,7 +114,6 @@ function genre(idin, namein, colorin, xin, yin, zin, infoin){
   }
 
   this.hasLink = function(m){
-    console.log(this.links);
     for(let i = 0; i < this.links.length; i++){
       if(this.links[i] == m)
         return true;
@@ -166,14 +165,13 @@ function windowResized() {
   
 }
 
-function mousePressed(){
+function mouseClicked(){
   if(start){
     start = false;
     overlay.style('display', "none");
   }
   else{
     let x = getObjectID(mouseX, mouseY);
-    print("Object: " + x);
     for(let i = 0; i < numGenre; i++){
       if(red(genres[i].color) == red(x) && green(genres[i].color) == green(x) && blue(genres[i].color) == blue(x)){
         //genres[i].color = randColor();
@@ -189,7 +187,6 @@ function getObjectID(mx, my) {
     return 0;
   }
     loadPixels();
-    print(pixels);
     var index = 4 * ((h-my) * w + mx);
 
     return color(pixels[index], pixels[index+1], pixels[index+2]);
@@ -240,7 +237,6 @@ function closeNav() {
 function inpEvent(){
   var a, b, i, val = searchInput.value();
   var name;
-  console.log(val);
   closeAllLists();
 
   if (!val) { return false;}
@@ -253,21 +249,28 @@ function inpEvent(){
 
   for(i = 0; i < numGenre; i++){
     name = genres[i].name;
-    console.log(name);
     if(name.substr(0, val.length).toUpperCase() == val.toUpperCase()){
       b = createDiv("<strong>" + name.substr(0, val.length) + "</strong>");
       b.html(name.substr(val.length), true);
       b.html("<input type='hidden' value='" + name + "'>", true);
-      b.mousePressed(bPressed)
-      function bPressed(){
-        searchInput.value(select('input', b).value());
+      b.elt.addEventListener("click", function(e) {
+        /*insert the value for the autocomplete text field:*/
+        searchInput.value(this.getElementsByTagName("input")[0].value);
+        /*close the list of autocompleted values,
+        (or any other open lists of autocompleted values:*/
         closeAllLists();
         buttonPressed();
-      };
+      });
+      /*mousePressed(function(e){
+        searchInput.value(select('input', this).value());
+        closeAllLists();
+        buttonPressed();
+      });*/
+
       a.child(b);
+      console.log(b);
     }
   }
-  console.log("yo");
 }
 
 function closeAllLists(elmnt) {
@@ -280,12 +283,9 @@ function closeAllLists(elmnt) {
 }
 
 function keyPressed(){
-  console.log("Pressed");
   var a;
   var x = select("#autocomplete-list");
-  console.log(x);
   if(x) a = selectAll("div", x);
-  console.log(a);
   switch(keyCode){
     case DOWN_ARROW:
       currentFocus++;
@@ -333,7 +333,7 @@ function buttonPressed(){
     name = gen.name;
     if(val.toUpperCase() == name.toUpperCase()){
       easycam.setCenter([gen.x, gen.y, gen.z], 500);
-      easycam.setDistance(100, 500);
+      easycam.setDistance(200, 500);
       searchInput.value("");
       openNav(gen.id);
     }
