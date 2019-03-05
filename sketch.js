@@ -43,7 +43,7 @@ function setup() {
   var canvas = createCanvas(w, h, WEBGL);
   canvas.parent(select("#canvas"));
   //pixelDensity(1);
-  //setAttributes('antialias', true);
+  setAttributes('antialias', true);
 
   console.log(Dw);
   console.log(Dw.EasyCam.INFO);
